@@ -39,10 +39,10 @@ static void with_wlr_modifier(wlr_seat *seat, xkb_mod_mask_t mod, const std::fun
 }
 
 class wayfire_mod2key : public wf::plugin_interface_t {
-	wf::key_callback on_binding = [=](uint32_t value) {
+	wf::key_callback on_binding = [=](const wf::keybinding_t &kb) {
 		auto seat = wf::get_core().get_current_seat();
 
-		xkb_keycode_t keycode = value + 8;
+		xkb_keycode_t keycode = kb.get_key() + 8;
 		auto keyboard = wlr_seat_get_keyboard(seat);
 		const xkb_keysym_t *keysyms;
 		auto keysyms_len = xkb_state_key_get_syms(keyboard->xkb_state, keycode, &keysyms);
