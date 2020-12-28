@@ -39,10 +39,14 @@ static void with_wlr_modifier(wlr_seat *seat, xkb_mod_mask_t mod, const std::fun
 }
 
 class wayfire_mod2key : public wf::plugin_interface_t {
-	wf::key_callback on_binding = [=](const wf::keybinding_t &kb) {
+	wf::activator_callback on_binding = [=](const wf::activator_data_t &data) {
+		if (data.source != wf::activator_source_t::MODIFIERBINDING) {
+			LOGE("Unexpected callback source");
+		}
+
 		auto seat = wf::get_core().get_current_seat();
 
-		xkb_keycode_t keycode = kb.get_key() + 8;
+		xkb_keycode_t keycode = data.activation_data + 8;
 		auto keyboard = wlr_seat_get_keyboard(seat);
 		const xkb_keysym_t *keysyms;
 		auto keysyms_len = xkb_state_key_get_syms(keyboard->xkb_state, keycode, &keysyms);
@@ -80,13 +84,13 @@ class wayfire_mod2key : public wf::plugin_interface_t {
 	void setup_bindings() {
 		// TODO: dynamic conf (from and to bindings)
 		if (ctrl_as_esc) {
-			binds.emplace_back(
-			    output->add_key(wf::create_option_string<wf::keybinding_t>("<ctrl>"), &on_binding));
+			binds.emplace_back(output->add_activator(
+			    wf::create_option_string<wf::activatorbinding_t>("<ctrl>"), &on_binding));
 		}
 
 		if (shifts_as_parens) {
-			binds.emplace_back(
-			    output->add_key(wf::create_option_string<wf::keybinding_t>("<shift>"), &on_binding));
+			binds.emplace_back(output->add_activator(
+			    wf::create_option_string<wf::activatorbinding_t>("<shift>"), &on_binding));
 		}
 	}
 
